@@ -22,7 +22,7 @@ def user_agent():
 def error():
     return '<h1>400を返します</h1>', 400
 
-# クッキー(まだクッキーについて理解しきれていない)
+# クッキー
 @app.route('/cookie')
 def cookie():
     response = make_response('<h1>クッキーを使用します</h1>')
@@ -34,10 +34,10 @@ def cookie():
 def redirect_test():
     return redirect('http://google.com')
 
-# 例外に404を返す（まだ理解しきれていない）
+# 例外に404を返す（動かない）
 @app.route('/user_verify/<id>')
 def get_user(id):
-    user = load_user(id) #この関数は？
+    user = load_user(id) #定義してないので動かない
     if not user:
         abort(404)
     return '<h1>こんにちは、%s' % user.name
