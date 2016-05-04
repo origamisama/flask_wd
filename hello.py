@@ -11,5 +11,8 @@ def index():
 def user(name):
     return '<h1>こんにちは、%s<h1>' % name
 
+@app.route('/error/')
+def error():
+    return '<h1>４０４っす</h1>', 400
 if __name__ == '__main__':
     app.run(debug=True)
