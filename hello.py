@@ -32,5 +32,18 @@ def variables():
                             myintvar = rand,
                             myobj=obj_ex)
 
+@app.route('/filters')
+def escape():
+    return render_template('filters.html',
+                            safe = '<h1>ふはは</h1>',
+                            capitalize = 'oRZ',
+                            lower = 'ORZ',
+                            upper = 'otz',
+                            title = 'orz orz orz',
+                            trim = 'o r z',
+                            striptags = '<h1>ふ<br />は<br />は</h1>'
+                            )
+
+
 if __name__ == '__main__':
     manager.run()
