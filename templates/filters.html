@@ -1,3 +1,8 @@
+{% extends "base.html" %}
+
+{% block title %}Flask_wd -Filters{% endblock %}
+
+{% block page_content %}
 <p>
 |safeフィルターを使わないと{{safe}}
 |safeフィルターを使うと {{safe|safe}}
@@ -26,4 +31,4 @@
 |striptagsフィルターを使わないと{{striptags}}
 |striptagsフィルターを使うと {{striptags|striptags}}
 </p>
-
+{% endblock %}
