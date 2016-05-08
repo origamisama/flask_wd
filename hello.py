@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect, url_for
 from flask.ext.script import Manager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
@@ -19,9 +19,20 @@ class NameForm(Form):
     submit = SubmitField('送信')
 
 # 基本
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def index():
-    return render_template('index.html', current_time=datetime.datetime.utcnow())
+    name = None
+    form = NameForm()
+    if form.validate_on_submit():
+        #name = form.name.data
+        #form.name.data = ''
+        session['name'] =form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html',
+                           current_time=datetime.datetime.utcnow(),
+                           form = form,
+                           name = session.get('name')
+                           )
 
 # URIから受け取り
 @app.route('/user/<name>')
@@ -65,7 +76,7 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'),500
 
-@app.route('/form')
+@app.route('/form', methods=['GET','POST'])
 def form():
     form = NameForm()
     return render_template('form.html',form=form)
