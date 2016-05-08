@@ -2,12 +2,21 @@ from flask import Flask, render_template
 from flask.ext.script import Manager
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
+from flask.ext.wtf import Form
+from wtforms import StringField, SubmitField
+from wtforms.validators import Required
 import random, datetime
 
 app = Flask(__name__)
 manager = Manager(app)
 bootstrap = Bootstrap(app)
 moment = Moment(app)
+app.config['SECRET_KEY'] = 'easytoguess'
+
+# Webform用のクラス
+class NameForm(Form):
+    name = StringField('あなたのお名前は？', validators=[Required()])
+    submit = SubmitField('送信')
 
 # 基本
 @app.route('/')
@@ -56,5 +65,12 @@ def page_not_found(e):
 def internal_server_error(e):
     return render_template('500.html'),500
 
+@app.route('/form')
+def form():
+    form = NameForm()
+    return render_template('form.html',form=form)
+
 if __name__ == '__main__':
     manager.run()
+
+
