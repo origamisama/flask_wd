@@ -1,46 +1,89 @@
-from flask import Flask, request, make_response, redirect, abort
+from flask import Flask, render_template, session, redirect, url_for, flash
+from flask.ext.script import Manager
+from flask.ext.bootstrap import Bootstrap
+from flask.ext.moment import Moment
+from flask.ext.wtf import Form
+from wtforms import StringField, SubmitField
+from wtforms.validators import Required
+import random, datetime
+
 app = Flask(__name__)
+manager = Manager(app)
+bootstrap = Bootstrap(app)
+moment = Moment(app)
+app.config['SECRET_KEY'] = 'easytoguess'
+
+# Webform用のクラス
+class NameForm(Form):
+    name = StringField('あなたのお名前は？', validators=[Required()])
+    submit = SubmitField('送信')
 
 # 基本
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def index():
-    return '<h1>こんにちは</h1>'
+    name = None
+    form = NameForm()
+    if form.validate_on_submit():
+        old_name = session.get('name')
+        if old_name is not None and old_name != form.name.data:
+            flash('名前変えたね？')
+        session['name'] = form.name.data
+        form.name.data = ''
+        return redirect(url_for('index'))
+    return render_template('index.html',
+                           current_time=datetime.datetime.utcnow(),
+                           form = form,
+                           name = session.get('name')
+                           )
 
 # URIから受け取り
 @app.route('/user/<name>')
 def user(name):
-    return '<h1>こんにちは、%s</h1>' % name
+    return render_template('user.html', name = name)
 
-# UserAgent情報
-@app.route('/user-agent')
-def user_agent():
-    user_agent = request.headers.get('User-Agent')
-    return '<h1>あなたのブラウザは %s です</h1>' % user_agent
+# 変数
+class ObjEx(object):    # オブジェクト呼び出しのためのテストクラス
+    def print_today(self):
+        return datetime.datetime.today()  # 今日の値を返す
 
-# 返すコードを指定
-@app.route('/error')
-def error():
-    return '<h1>400を返します</h1>', 400
+@app.route('/variables')
+def variables():
+    dict_ex = {'key':'キーさんです', 'key2':555}
+    list_ex = [34,'コイツです', 55.555]
+    rand = random.randint(0,2)  # 変数渡しのテスト
+    obj_ex = ObjEx()
+    return render_template('variables.html',
+                            mydict=dict_ex,
+                            mylist=list_ex,
+                            myintvar = rand,
+                            myobj=obj_ex)
 
-# クッキー
-@app.route('/cookie')
-def cookie():
-    response = make_response('<h1>クッキーを使用します</h1>')
-    response.set_cookie('treasure', '555')
-    return response
+@app.route('/filters')
+def escape():
+    return render_template('filters.html',
+                            safe = '<h1>ふはは</h1>',
+                            capitalize = 'oRZ',
+                            lower = 'ORZ',
+                            upper = 'otz',
+                            title = 'orz orz orz',
+                            trim = 'o r z',
+                            striptags = '<h1>ふ<br />は<br />は</h1>'
+                            )
 
-# リダイレクト
-@app.route('/redirect')
-def redirect_test():
-    return redirect('http://google.com')
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'),404
 
-# 例外に404を返す（動かない）
-@app.route('/user_verify/<id>')
-def get_user(id):
-    user = load_user(id) #定義してないので動かない
-    if not user:
-        abort(404)
-    return '<h1>こんにちは、%s' % user.name
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'),500
+
+@app.route('/form', methods=['GET','POST'])
+def form():
+    form = NameForm()
+    return render_template('form.html',form=form)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    manager.run()
+
+
