@@ -1,11 +1,12 @@
 from flask import Flask, render_template, session, redirect, url_for, flash
-from flask.ext.script import Manager
+from flask.ext.script import Manager, Shell
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.moment import Moment
 from flask.ext.wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.migrate import Migrate, MigrateCommand
 import random, datetime, os
 
 basedir = os.path.abspath(os.path.dirname(__file__)) # hello.pyの存在するディレクトリ
@@ -49,6 +50,14 @@ class User(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+# データベースを自動で設定するためのコマンドをmanagerに追加
+def make_shell_context():
+    return dict(app=app, db=db, User=User, Role=Role)
+manager.add_command("shell", Shell(make_context=make_shell_context))
+
+# データベースマイグレーションのコマンドをmanagerに追加
+migrate = Migrate(app, db)
+manager.add_command('db', MigrateCommand)
 
 # 基本
 @app.route('/', methods=['GET','POST'])
@@ -56,16 +65,21 @@ def index():
     name = None
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get('name')
-        if old_name is not None and old_name != form.name.data:
-            flash('名前変えたね？')
+        user = User.query.filter_by(username=form.name.data).first()
+        if user is None:
+            user = User(username=form.name.data) # DBにないユーザーの場合は格納
+            db.session.add(user)
+            session['known'] = False
+        else:
+            session['known'] = True
         session['name'] = form.name.data
         form.name.data = ''
         return redirect(url_for('index'))
     return render_template('index.html',
                            current_time=datetime.datetime.utcnow(),
                            form = form,
-                           name = session.get('name')
+                           name = session.get('name'),
+                           known = session.get('known', False) #ここのFalseの意味とは
                            )
 
 # URIから受け取り
