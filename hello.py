@@ -5,18 +5,50 @@ from flask.ext.moment import Moment
 from flask.ext.wtf import Form
 from wtforms import StringField, SubmitField
 from wtforms.validators import Required
-import random, datetime
+from flask.ext.sqlalchemy import SQLAlchemy
+import random, datetime, os
 
-app = Flask(__name__)
-manager = Manager(app)
-bootstrap = Bootstrap(app)
-moment = Moment(app)
-app.config['SECRET_KEY'] = 'easytoguess'
+basedir = os.path.abspath(os.path.dirname(__file__)) # hello.pyの存在するディレクトリ
+
+# 各種オブジェクト生成
+app = Flask(__name__) # appオブジェクト
+manager = Manager(app) # flask-manager使用のためのオブジェクト
+bootstrap = Bootstrap(app) # flask-bootstrap使用のためのオブジェクト
+moment = Moment(app) # flask-moment使用のためのオブジェクト
+
+# app.config 設定
+app.config['SECRET_KEY'] = 'easytoguess' # flask-WTFで使用するシークレットキー（普通はなんかの乱数）
+app.config['SQLALCHEMY_DATABASE_URI'] =\
+    'sqlite:///' + os.path.join(basedir, 'data.sqlite') # sqliteのベースディレクトリ指定
+app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] =True # データベース変更時に自動コミットする設定
+
+# db操作用のオブジェクト生成
+db = SQLAlchemy(app)
 
 # Webform用のクラス
 class NameForm(Form):
     name = StringField('あなたのお名前は？', validators=[Required()])
     submit = SubmitField('送信')
+
+# SQLAlchemyのテスト用クラス
+class Role(db.Model):
+    __tablename__ = 'roles'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(64), unique=True)
+    users = db.relationship('User', backref='role', lazy='dynamic') # usersテーブルへの逆参照,roleをroles_idの代わりに使える？  
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
 
 # 基本
 @app.route('/', methods=['GET','POST'])
