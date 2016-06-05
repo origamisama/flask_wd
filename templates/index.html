@@ -2,11 +2,16 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 {% block page_content %}
-    <div class="page-header">
-        <h1>こんにちは、{% if name %}{{ name}}{% else %}誰かさん{% endif %}</h1>
-    </div>
-    {{wtf.quick_form(form)}}
-    <p>ブラウザの時間は {{ moment(current_time).format('LLL') }} です</p>
-    <p>それは {{ moment(current_time).fromNow(refresh=True) }} でした</p>
+<div class="page-header">
+    <h1>こんにちは、{% if name %}{{ name}}{% else %}誰かさん{% endif %}</h1>
+    {% if not known %}
+    <p>はじめまして！</p>
+    {% else %}
+    <p>また会えたね！</p>
+    {% endif %}
+</div>
+{{wtf.quick_form(form)}}
+<p>ブラウザの時間は {{ moment(current_time).format('LLL') }} です</p>
+<p>それは {{ moment(current_time).fromNow(refresh=True) }} でした</p>
 
 {% endblock %}
