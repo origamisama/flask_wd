@@ -25,8 +25,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] =\
     'sqlite:///' + os.path.join(basedir, 'data.sqlite') # sqliteのベースディレクトリ指定
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] =True # データベース変更時に自動コミットする設定
 # メール設定
-with open('../testmailinfo.csv', newline='') as csvfile:
-    mailconf = list(csv.reader(csvfile, delimiter=','))
+try:
+    with open('../testmailinfo.csv', newline='') as csvfile:
+        mailconf = list(csv.reader(csvfile, delimiter=','))
+except FileNotFoundError:
+    pass
 
 app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
 app.config['MAIL_PORT'] = 587
