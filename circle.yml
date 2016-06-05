@@ -1,6 +1,19 @@
+machine:
+    python:
+        version: 3.5.0
+
+dependencies:
+    pre:
+        - chmod -R 777 ./
+        - pip install -r ./requirements.txt
+        - python ./hello.py runserver -d:
+            background: true
+        - sleep 5
+
 test:
     override:
         - pwd ~
         - ifconfig
         - echo HelloWorld
+        - curl http://127.0.0.1:5000/
         - exit 0
