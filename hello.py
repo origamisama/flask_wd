@@ -29,7 +29,7 @@ try:
     with open('../testmailinfo.csv', newline='') as csvfile:
         mailconf = list(csv.reader(csvfile, delimiter=','))
 except FileNotFoundError:
-    pass
+    mailconf = [['','']]
 
 app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
 app.config['MAIL_PORT'] = 587
