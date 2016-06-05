@@ -9,6 +9,7 @@ dependencies:
         - python ./hello.py runserver -d:
             background: true
         - sleep 5
+        - cat nohup.out
 
 test:
     override:
