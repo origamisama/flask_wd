@@ -34,6 +34,7 @@ app.config['MAIL_USERNAME'] = mailconf[0][0]
 app.config['MAIL_PASSWORD'] = mailconf[0][1]
 app.config['FLASK_WD_MAIL_SUBJECT_PREFIX'] = '[Flask_wd]'
 app.config['FLASK_WD_MAIL_SENDER'] = 'Flask_admin <flask_wd@example.com>'
+app.config['FLASK_WD_ADMIN'] = mailconf[0[0]
 
 # db操作用のオブジェクト生成
 db = SQLAlchemy(app)
