@@ -7,8 +7,9 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.migrate import Migrate, MigrateCommand
-from flask.ext.mail import Mail
+from flask.ext.mail import Mail, Message
 import random, datetime, os, csv
+from threading import Thread
 
 basedir = os.path.abspath(os.path.dirname(__file__)) # hello.pyの存在するディレクトリ
 
@@ -34,7 +35,7 @@ app.config['MAIL_USERNAME'] = mailconf[0][0]
 app.config['MAIL_PASSWORD'] = mailconf[0][1]
 app.config['FLASK_WD_MAIL_SUBJECT_PREFIX'] = '[Flask_wd]'
 app.config['FLASK_WD_MAIL_SENDER'] = 'Flask_admin <flask_wd@example.com>'
-app.config['FLASK_WD_ADMIN'] = mailconf[0[0]
+app.config['FLASK_WD_ADMIN'] = mailconf[0][0]
 
 # db操作用のオブジェクト生成
 db = SQLAlchemy(app)
@@ -81,7 +82,14 @@ def send_email(to, subject, template, **kwargs):
                     sender=app.config['FLASK_WD_MAIL_SENDER'], recipients=[to])
     msg.body = render_template(template + '.txt', **kwargs)
     msg.html = render_template(template + '.html', **kwargs)
-    mail.send(msg)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
+
+# メールをバックグランドで送信するメソッド
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
 
 # 基本
 @app.route('/', methods=['GET','POST'])
