@@ -7,7 +7,8 @@ from wtforms import StringField, SubmitField
 from wtforms.validators import Required
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.migrate import Migrate, MigrateCommand
-import random, datetime, os
+from flask.ext.mail import Mail
+import random, datetime, os, csv
 
 basedir = os.path.abspath(os.path.dirname(__file__)) # hello.pyの存在するディレクトリ
 
@@ -22,6 +23,15 @@ app.config['SECRET_KEY'] = 'easytoguess' # flask-WTFで使用するシークレ�
 app.config['SQLALCHEMY_DATABASE_URI'] =\
     'sqlite:///' + os.path.join(basedir, 'data.sqlite') # sqliteのベースディレクトリ指定
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] =True # データベース変更時に自動コミットする設定
+# メール設定
+with open('../testmailinfo.csv', newline='') as csvfile:
+    mailconf = list(csv.reader(csvfile, delimiter=','))
+
+app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = mailconf[0][0]
+app.config['MAIL_PASSWORD'] = mailconf[0][1]
 
 # db操作用のオブジェクト生成
 db = SQLAlchemy(app)
@@ -58,6 +68,9 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 # データベースマイグレーションのコマンドをmanagerに追加
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
+
+# メール送信用のオブジェ
+mail = Mail(app)
 
 # 基本
 @app.route('/', methods=['GET','POST'])
