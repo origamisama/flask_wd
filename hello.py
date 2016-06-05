@@ -32,6 +32,8 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = mailconf[0][0]
 app.config['MAIL_PASSWORD'] = mailconf[0][1]
+app.config['FLASK_WD_MAIL_SUBJECT_PREFIX'] = '[Flask_wd]'
+app.config['FLASK_WD_MAIL_SENDER'] = 'Flask_admin <flask_wd@example.com>'
 
 # db操作用のオブジェクト生成
 db = SQLAlchemy(app)
@@ -69,8 +71,16 @@ manager.add_command("shell", Shell(make_context=make_shell_context))
 migrate = Migrate(app, db)
 manager.add_command('db', MigrateCommand)
 
-# メール送信用のオブジェ
+# メール送信用のオブジェクト（こいつはconfの後で宣言してあげる必要あり
 mail = Mail(app)
+
+# メール送信用メソッド
+def send_email(to, subject, template, **kwargs):
+    msg = Message(app.config['FLASK_WD_MAIL_SUBJECT_PREFIX'] + subject,
+                    sender=app.config['FLASK_WD_MAIL_SENDER'], recipients=[to])
+    msg.body = render_template(template + '.txt', **kwargs)
+    msg.html = render_template(template + '.html', **kwargs)
+    mail.send(msg)
 
 # 基本
 @app.route('/', methods=['GET','POST'])
@@ -83,6 +93,8 @@ def index():
             user = User(username=form.name.data) # DBにないユーザーの場合は格納
             db.session.add(user)
             session['known'] = False
+            if app.config['FLASK_WD_ADMIN']:
+                send_email(app.config['FLASK_WD_ADMIN'], 'New User', 'mail/new_user', user=user)
         else:
             session['known'] = True
         session['name'] = form.name.data
