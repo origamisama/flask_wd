@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<div class="page-header">
+<h1>フォームテスト</h1>
+</div>
+<form method="POST"></form>
+{{ form.name.label }}{{ form.name() }}
+{{ form.submit }}
+<div class="page-header">
+<h1>quick_formだと</h1>
+{% import "bootstrap/wtf.html" as wtf %}
+{{ wtf.quick_form(form) }}
+</div>
+{% endblock %}

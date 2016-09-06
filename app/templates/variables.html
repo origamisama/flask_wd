@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Flask_wd - variables{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <p>dictionaryから、keyのvalue:{{mydict['key']}}</p>
+        <p>listから、2番目:{{mylist[2]}}</p>
+        <p>listから、変数インデックスで:{{mylist[myintvar]}}</p>
+        <p>objectのmethodから: {{myobj.print_today()}}</p>
+    </div>
+{% endblock %}
+
+
+
