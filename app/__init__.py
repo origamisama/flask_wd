@@ -25,7 +25,7 @@ def create_app(config_name):
     """ appを生成するための関数（application factory)"""
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    config[config_name].init__app(app)
+    config[config_name].init_app(app)
 
     bootstrap.init_app(app)
     mail.init_app(app)
@@ -33,7 +33,7 @@ def create_app(config_name):
     db.init_app(app)
 
     # routesとerror page はここに記述
-    from main import main as main_blueprint
+    from .main import main as main_blueprint # main->.mainに変更
     app.register_blueprint(main_blueprint)
 
     return app
